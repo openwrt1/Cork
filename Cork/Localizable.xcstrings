@@ -28049,7 +28049,6 @@
       }
     },
     "DEBUG: Log packages to be adopted" : {
-      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -28654,7 +28653,6 @@
       "shouldTranslate" : false
     },
     "debug.navigation" : {
-      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
