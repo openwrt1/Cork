@@ -10,6 +10,41 @@ import Defaults
 import FactoryKit
 import Foundation
 
+// A thread-safe global registry of currently running Homebrew Process tasks
+public struct ActiveProcessesRegistry
+{
+    nonisolated(unsafe) private static let lock = NSLock()
+    nonisolated(unsafe) private static var activeProcesses = Set<Process>()
+    
+    public static func register(_ process: Process)
+    {
+        lock.lock()
+        activeProcesses.insert(process)
+        lock.unlock()
+    }
+    
+    public static func deregister(_ process: Process)
+    {
+        lock.lock()
+        activeProcesses.remove(process)
+        lock.unlock()
+    }
+    
+    public static func terminateAll()
+    {
+        lock.lock()
+        for process in activeProcesses
+        {
+            if process.isRunning
+            {
+                process.terminate()
+            }
+        }
+        activeProcesses.removeAll()
+        lock.unlock()
+    }
+}
+
 @discardableResult
 public func shell(
     _ launchPath: URL,
@@ -53,6 +88,7 @@ public func shell(
 ) -> AsyncStream<TerminalOutput>
 {
     let task: Process = .init()
+    ActiveProcessesRegistry.register(task)
     
     var finalEnvironment: [String: String] = ProcessInfo.processInfo.environment
     
@@ -61,12 +97,29 @@ public func shell(
     finalEnvironment["HOMEBREW_NO_REQUIRE_TAP_TRUST"] = "1"
     
     // MARK: - Set up mirrors if the environment variables exist
-
-    if let brewApiDomain = ProcessInfo.processInfo.environment["HOMEBREW_API_DOMAIN"]
+    
+    if UserDefaults.standard.bool(forKey: "customHomebrewApiDomainEnabled")
+    {
+        let apiDomain = UserDefaults.standard.string(forKey: "customHomebrewApiDomain") ?? ""
+        if !apiDomain.isEmpty
+        {
+            finalEnvironment["HOMEBREW_API_DOMAIN"] = apiDomain
+        }
+    }
+    else if let brewApiDomain = ProcessInfo.processInfo.environment["HOMEBREW_API_DOMAIN"]
     {
         finalEnvironment["HOMEBREW_API_DOMAIN"] = brewApiDomain
     }
-    if let brewBottleDomain = ProcessInfo.processInfo.environment["HOMEBREW_BOTTLE_DOMAIN"]
+    
+    if UserDefaults.standard.bool(forKey: "customHomebrewBottleDomainEnabled")
+    {
+        let bottleDomain = UserDefaults.standard.string(forKey: "customHomebrewBottleDomain") ?? ""
+        if !bottleDomain.isEmpty
+        {
+            finalEnvironment["HOMEBREW_BOTTLE_DOMAIN"] = bottleDomain
+        }
+    }
+    else if let brewBottleDomain = ProcessInfo.processInfo.environment["HOMEBREW_BOTTLE_DOMAIN"]
     {
         finalEnvironment["HOMEBREW_BOTTLE_DOMAIN"] = brewBottleDomain
     }
@@ -152,6 +205,7 @@ public func shell(
         }
 
         task.terminationHandler = { _ in
+            ActiveProcessesRegistry.deregister(task)
             continuation.finish()
         }
     }
@@ -165,6 +219,7 @@ public func shell(
 ) -> (stream: AsyncStream<TerminalOutput>, process: Process)
 {
     let task: Process = .init()
+    ActiveProcessesRegistry.register(task)
 
     var finalEnvironment: [String: String] = ProcessInfo.processInfo.environment
 
@@ -173,12 +228,29 @@ public func shell(
     finalEnvironment["HOMEBREW_NO_REQUIRE_TAP_TRUST"] = "1"
     
     // MARK: - Set up mirrors if the environment variables exist
-
-    if let brewApiDomain = ProcessInfo.processInfo.environment["HOMEBREW_API_DOMAIN"]
+    
+    if UserDefaults.standard.bool(forKey: "customHomebrewApiDomainEnabled")
+    {
+        let apiDomain = UserDefaults.standard.string(forKey: "customHomebrewApiDomain") ?? ""
+        if !apiDomain.isEmpty
+        {
+            finalEnvironment["HOMEBREW_API_DOMAIN"] = apiDomain
+        }
+    }
+    else if let brewApiDomain = ProcessInfo.processInfo.environment["HOMEBREW_API_DOMAIN"]
     {
         finalEnvironment["HOMEBREW_API_DOMAIN"] = brewApiDomain
     }
-    if let brewBottleDomain = ProcessInfo.processInfo.environment["HOMEBREW_BOTTLE_DOMAIN"]
+    
+    if UserDefaults.standard.bool(forKey: "customHomebrewBottleDomainEnabled")
+    {
+        let bottleDomain = UserDefaults.standard.string(forKey: "customHomebrewBottleDomain") ?? ""
+        if !bottleDomain.isEmpty
+        {
+            finalEnvironment["HOMEBREW_BOTTLE_DOMAIN"] = bottleDomain
+        }
+    }
+    else if let brewBottleDomain = ProcessInfo.processInfo.environment["HOMEBREW_BOTTLE_DOMAIN"]
     {
         finalEnvironment["HOMEBREW_BOTTLE_DOMAIN"] = brewBottleDomain
     }
@@ -271,6 +343,7 @@ public func shell(
         }
 
         task.terminationHandler = { _ in
+            ActiveProcessesRegistry.deregister(task)
             continuation.finish()
         }
     }

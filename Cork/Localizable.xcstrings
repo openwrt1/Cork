@@ -27044,6 +27044,9 @@
         }
       }
     },
+    "API Domain" : {
+
+    },
     "app-adoption.currently-being-adopted.%@" : {
       "localizations" : {
         "cs" : {
@@ -27247,6 +27250,9 @@
     },
     "bothManagedAndUnmanaged" : {
       "shouldTranslate" : false
+    },
+    "Bottle Domain" : {
+
     },
     "brewfile.export.default-export-name-%@" : {
       "localizations" : {
@@ -28048,6 +28054,12 @@
         }
       }
     },
+    "Custom Homebrew Mirror Domains" : {
+
+    },
+    "Custom Network Proxy" : {
+
+    },
     "DEBUG: Log packages to be adopted" : {
       "localizations" : {
         "cs" : {
@@ -28764,6 +28776,15 @@
         }
       },
       "shouldTranslate" : false
+    },
+    "Enable Custom API Domain (HOMEBREW_API_DOMAIN)" : {
+
+    },
+    "Enable Custom Bottle Domain (HOMEBREW_BOTTLE_DOMAIN)" : {
+
+    },
+    "Enable Custom Proxy (Cork commands only)" : {
+
     },
     "error-inspector.title" : {
       "localizations" : {
@@ -54779,6 +54800,12 @@
           }
         }
       }
+    },
+    "Proxy Host" : {
+
+    },
+    "Proxy Port" : {
+
     },
     "repair-package.repair-length.explanation" : {
       "localizations" : {

@@ -21,4 +21,16 @@ public extension Defaults.Keys
     static let allowAdvancedHomebrewSettings: Key<Bool> = .init("allowAdvancedHomebrewSettings", default: false)
     
     static let customHomebrewPath: Key<URL?> = .init("customHomebrewPath", default: nil)
+    
+    // MARK: - Custom Proxy Settings
+    static let customProxyEnabled: Key<Bool> = .init("customProxyEnabled", default: false)
+    static let customProxyHost: Key<String> = .init("customProxyHost", default: "127.0.0.1")
+    static let customProxyPort: Key<Int> = .init("customProxyPort", default: 7890)
+    
+    // MARK: - Custom Mirror Domains
+    static let customHomebrewBottleDomainEnabled: Key<Bool> = .init("customHomebrewBottleDomainEnabled", default: false)
+    static let customHomebrewBottleDomain: Key<String> = .init("customHomebrewBottleDomain", default: "")
+    
+    static let customHomebrewApiDomainEnabled: Key<Bool> = .init("customHomebrewApiDomainEnabled", default: false)
+    static let customHomebrewApiDomain: Key<String> = .init("customHomebrewApiDomain", default: "")
 }

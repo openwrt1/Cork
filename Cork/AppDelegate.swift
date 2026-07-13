@@ -13,6 +13,7 @@ import CorkShared
 import Defaults
 import DefaultsMacros
 import CorkModels
+import CorkTerminalFunctions
 
 @Observable
 class AppDelegate: NSObject, NSApplicationDelegate
@@ -109,5 +110,9 @@ class AppDelegate: NSObject, NSApplicationDelegate
 
         return menu
     }
-     */
+    */
+    func applicationWillTerminate(_: Notification)
+    {
+        ActiveProcessesRegistry.terminateAll()
+    }
 }

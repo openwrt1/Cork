@@ -176,12 +176,13 @@ public extension [TerminalOutput]
             return nil
         }
 
-        guard let firstElementInOutputArray: String = self.standardOutputs.first
+        let combinedOutput = self.standardOutputs.joined()
+        guard !combinedOutput.isEmpty
         else
         {
             return nil
         }
 
-        return firstElementInOutputArray.data(using: .utf8)
+        return combinedOutput.data(using: .utf8)
     }
 }

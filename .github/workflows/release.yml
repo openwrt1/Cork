@@ -1,0 +1,70 @@
+name: Manual Build and Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Release Tag (e.g. v1.5.0)'
+        required: true
+        default: 'v1.5.0'
+      release_name:
+        description: 'Release Name'
+        required: true
+        default: 'Cork Unlocked Release'
+      draft:
+        description: 'Create Draft Release'
+        required: false
+        type: boolean
+        default: false
+      prerelease:
+        description: 'Pre-release'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: macos-14
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Build App
+        run: |
+          xcodebuild -workspace Cork.xcworkspace \
+                     -scheme Cork \
+                     -configuration Release \
+                     -derivedDataPath Build/ \
+                     CODE_SIGN_IDENTITY="-" \
+                     build
+
+      - name: Package App
+        run: |
+          cd Build/Build/Products/Release
+          zip -r ../../../Cork.zip Cork.app
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag_name }}
+          name: ${{ github.event.inputs.release_name }}
+          draft: ${{ github.event.inputs.draft }}
+          prerelease: ${{ github.event.inputs.prerelease }}
+          files: Cork.zip
+          body: |
+            ## Cork Unlocked Compiled Release
+            
+            This release was compiled automatically via GitHub Actions (unlocked/ad-free/no registration required).
+            
+            ### Install Instructions
+            Since this build is ad-hoc signed, macOS may show a "damaged" or developer verification warning upon first open. To bypass this, run the following command in Terminal after moving Cork to your `/Applications` folder:
+            
+            ```bash
+            xattr -cr /Applications/Cork.app
+            ```
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

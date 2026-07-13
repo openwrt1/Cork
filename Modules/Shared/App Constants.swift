@@ -9,6 +9,7 @@ import Foundation
 import OSLog
 import SwiftData
 @preconcurrency import UserNotifications
+import Defaults
 
 public struct AppConstants: Sendable
 {
@@ -19,27 +20,7 @@ public struct AppConstants: Sendable
         
         let internalLogger: Logger = .init(subsystem: "com.davidbures.cork", category: "Cork")
         
-        // MARK: - Initialize proxy settings
-        self.proxySettings = {
-            let proxySettings: [String: Any]? = CFNetworkCopySystemProxySettings()?.takeUnretainedValue() as? [String: Any]
-            
-            guard let httpProxyHost = proxySettings?[kCFNetworkProxiesHTTPProxy as String] as? String
-            else
-            {
-                internalLogger.error("Could not get proxy host")
-                
-                return nil
-            }
-            guard let httpProxyPort = proxySettings?[kCFNetworkProxiesHTTPPort as String] as? Int
-            else
-            {
-                internalLogger.error("Could not get proxy port")
-                
-                return nil
-            }
-            
-            return (host: httpProxyHost, port: httpProxyPort)
-        }()
+
         
         // MARK: -
         self.documentsDirectoryPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appending(component: "Cork", directoryHint: .isDirectory)
@@ -96,9 +77,30 @@ public struct AppConstants: Sendable
 
     public let notificationCenter: UNUserNotificationCenter = UNUserNotificationCenter.current()
 
-    // MARK: - Proxy settings
-
-    public let proxySettings: (host: String, port: Int)?
+    public var proxySettings: (host: String, port: Int)?
+    {
+        if UserDefaults.standard.bool(forKey: "customProxyEnabled")
+        {
+            let host = UserDefaults.standard.string(forKey: "customProxyHost") ?? ""
+            let port = UserDefaults.standard.integer(forKey: "customProxyPort")
+            if !host.isEmpty && port > 0
+            {
+                return (host: host, port: port)
+            }
+        }
+        
+        guard let proxySettingsUnmanaged = CFNetworkCopySystemProxySettings() else { return nil }
+        let proxySettings = proxySettingsUnmanaged.takeRetainedValue() as? [String: Any]
+        
+        guard let httpProxyHost = proxySettings?[kCFNetworkProxiesHTTPProxy as String] as? String,
+              let httpProxyPort = proxySettings?[kCFNetworkProxiesHTTPPort as String] as? Int
+        else
+        {
+            return nil
+        }
+        
+        return (host: httpProxyHost, port: httpProxyPort)
+    }
 
     // MARK: - Basic executables and file locations
     

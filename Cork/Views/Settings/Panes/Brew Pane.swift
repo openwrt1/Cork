@@ -18,6 +18,16 @@ struct BrewPane: View
     @Default(.allowBrewAnalytics) var allowBrewAnalytics: Bool
     @Default(.allowAdvancedHomebrewSettings) var allowAdvancedHomebrewSettings: Bool
 
+    @Default(.customProxyEnabled) var customProxyEnabled: Bool
+    @Default(.customProxyHost) var customProxyHost: String
+    @Default(.customProxyPort) var customProxyPort: Int
+
+    @Default(.customHomebrewBottleDomainEnabled) var customHomebrewBottleDomainEnabled: Bool
+    @Default(.customHomebrewBottleDomain) var customHomebrewBottleDomain: String
+
+    @Default(.customHomebrewApiDomainEnabled) var customHomebrewApiDomainEnabled: Bool
+    @Default(.customHomebrewApiDomain) var customHomebrewApiDomain: String
+
     @Environment(SettingsState.self) var settingsState: SettingsState
 
     @State private var isPerformingBrewAnalyticsChangeCommand: Bool = false
@@ -49,6 +59,41 @@ struct BrewPane: View
                         .disabled(isPerformingBrewAnalyticsChangeCommand)
                     } label: {
                         Text("settings.brew.analytics")
+                    }
+                    
+                    Section(header: Text("Custom Network Proxy"))
+                    {
+                        Defaults.Toggle(key: .customProxyEnabled)
+                        {
+                            Text("Enable Custom Proxy (Cork commands only)")
+                        }
+                        
+                        TextField("Proxy Host", text: $customProxyHost)
+                            .disabled(!customProxyEnabled)
+                            .textFieldStyle(.roundedBorder)
+                        
+                        TextField("Proxy Port", value: $customProxyPort, format: .number)
+                            .disabled(!customProxyEnabled)
+                            .textFieldStyle(.roundedBorder)
+                    }
+                    
+                    Section(header: Text("Custom Homebrew Mirror Domains"))
+                    {
+                        Defaults.Toggle(key: .customHomebrewBottleDomainEnabled)
+                        {
+                            Text("Enable Custom Bottle Domain (HOMEBREW_BOTTLE_DOMAIN)")
+                        }
+                        TextField("Bottle Domain", text: $customHomebrewBottleDomain)
+                            .disabled(!customHomebrewBottleDomainEnabled)
+                            .textFieldStyle(.roundedBorder)
+                        
+                        Defaults.Toggle(key: .customHomebrewApiDomainEnabled)
+                        {
+                            Text("Enable Custom API Domain (HOMEBREW_API_DOMAIN)")
+                        }
+                        TextField("API Domain", text: $customHomebrewApiDomain)
+                            .disabled(!customHomebrewApiDomainEnabled)
+                            .textFieldStyle(.roundedBorder)
                     }
                 }
                 .onChange(of: allowBrewAnalytics)
