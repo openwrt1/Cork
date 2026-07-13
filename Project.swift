@@ -45,7 +45,6 @@ func corkTarget(configureWithSelfCompiled: Bool) -> ProjectDescription.Target {
             .external(name: "Defaults"),
             .external(name: "DefaultsMacros"),
             .external(name: "SwiftNavigation"),
-            .package(product: "SwiftLintBuildToolPlugin", type: .plugin)
         ], settings: .settings(configurations: [
             .debug(
                 name: "Debug",
@@ -283,9 +282,6 @@ let project = Project(
         automaticSchemesOptions: .enabled(runLanguage: "en"), 
         developmentRegion: "en"
     ),
-    packages: [
-        .remote(url: "https://github.com/SimplyDanny/SwiftLintPlugins", requirement: .upToNextMajor(from: "0.56.2")),
-    ],
     settings: .settings(
         base: [
             "SWIFT_VERSION": "6.0",
