@@ -83,12 +83,7 @@ struct CorkApp: App
                 }, content: {
                     OnboardingView()
                 })
-                .sheet(isPresented: !$hasFinishedLicensingWorkflow, onDismiss: {
-                    hasFinishedLicensingWorkflow = true
-                }, content: {
-                    LicensingView()
-                        .interactiveDismissDisabled()
-                })
+
                 .environment(brewPackagesTracker)
                 .environment(tapTracker)
                 .environment(cachedDownloadsTracker)
@@ -401,12 +396,7 @@ struct CorkApp: App
         }
         .disabled(!hasFinishedOnboarding)
 
-        Button
-        {
-            hasFinishedLicensingWorkflow = false
-        } label: {
-            Label("licensing.title", systemImage: "checkmark.seal")
-        }
+
 
         Divider()
     }
@@ -743,36 +733,7 @@ struct CorkApp: App
     // MARK: - Licensing
     func handleLicensing()
     {
-        print("Licensing state: \(appState.licensingState)")
-
-        #if SELF_COMPILED
-            AppConstants.shared.logger.debug("Will set licensing state to Self Compiled")
-            appState.licensingState = .selfCompiled
-        #else
-            if !hasValidatedEmail
-            {
-                if appState.licensingState != .selfCompiled
-                {
-                    if let demoActivatedAt
-                    {
-                        let timeDemoWillRunOutAt: Date = demoActivatedAt + AppConstants.shared.demoLengthInSeconds
-
-                        AppConstants.shared.logger.debug("There is \(demoActivatedAt.timeIntervalSinceNow.formatted()) to go on the demo")
-
-                        AppConstants.shared.logger.debug("Demo will time out at \(timeDemoWillRunOutAt.formatted(date: .complete, time: .complete))")
-
-                        if ((demoActivatedAt.timeIntervalSinceNow) + AppConstants.shared.demoLengthInSeconds) > 0
-                        { // Check if there is still time on the demo
-                            /// do stuff if there is
-                        }
-                        else
-                        {
-                            hasFinishedLicensingWorkflow = false
-                        }
-                    }
-                }
-            }
-        #endif
+        appState.licensingState = .bought
     }
     
     func handleDemoTiming(newValue: Date?)

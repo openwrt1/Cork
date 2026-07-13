@@ -16,8 +16,8 @@ public extension Defaults.Keys
     
     // MARK: - Licensing
     /// Whether the licensing workflow was completed by either putting in a license, or activating the demo
-    static let hasFinishedLicensingWorkflow: Key<Bool> = .init("hasFinishedLicensingWorkflow", default: false)
+    static let hasFinishedLicensingWorkflow: Key<Bool> = .init("hasFinishedLicensingWorkflow", default: true)
     
     /// Whether the user has put in a valid license email
-    static let hasValidatedEmail: Key<Bool> = .init("hasValidatedEmail", default: false)
+    static let hasValidatedEmail: Key<Bool> = .init("hasValidatedEmail", default: true)
 }
