@@ -10,6 +10,7 @@ import CorkShared
 import CorkTerminalFunctions
 import FactoryKit
 import Foundation
+import Defaults
 import SwiftUI
 
 @Observable @MainActor
@@ -19,7 +20,7 @@ public class UpdateProgressTracker: @MainActor TerminalOutputStreamable
 
     @Injected(\.appConstants) @ObservationIgnored var appConstants
 
-    public var isStreamedOutputExpanded: Bool = false
+    public var isStreamedOutputExpanded: Bool = Defaults[.openRealTimeTerminalOutputByDefault]
 
     var updateProgress: Progress
 
@@ -98,11 +99,25 @@ public class UpdateProgressTracker: @MainActor TerminalOutputStreamable
                 switch self
                 {
                 case .downloading:
-                    ["Downloading", "Upgrading", "Fetching"]
+                    [
+                        "Downloading", "Upgrading", "Fetching",
+                        "==> Fetching", "==> Upgrading",
+                        // Dependency download/install lines, e.g. "Installing scrcpy dependency: mpg123"
+                        "Installing scrcpy", "Installing ", "==> Installing"
+                    ]
                 case .pouring:
-                    ["Pouring", "Running installer"]
+                    [
+                        "Pouring", "Running installer", "==> Pouring",
+                        // Bottle pour completion lines (🍺) and download ticks (✔︎)
+                        "🍺", "✔︎"
+                    ]
                 case .cleanup:
-                    ["cleanup", "Removing App", "Unlinking", "Uninstalling", "Purging"]
+                    [
+                        "cleanup", "Removing App", "Unlinking", "Uninstalling",
+                        "Purging", "Removing:",
+                        "==> Summary", "==> Caveats", "==> Running",
+                        "==> Installed", "Upgraded "
+                    ]
                 case .backingUp:
                     ["Backing App"]
                 case .linking:
@@ -122,13 +137,43 @@ public class UpdateProgressTracker: @MainActor TerminalOutputStreamable
         {
             case tapUpdate
             case noChecksumDefined
+            case caveatsContent
+            case brewFormatting
 
             public var patterns: [String]
             {
                 switch self
                 {
-                case .tapUpdate: ["tap"]
-                case .noChecksumDefined: ["No checksum defined for"]
+                case .tapUpdate:
+                    ["tap"]
+                case .noChecksumDefined:
+                    ["No checksum defined for"]
+                case .caveatsContent:
+                    [
+                        "At runtime",
+                        "You can install",
+                        "brew install",
+                        "brew trust",
+                        "The following taps are not trusted",
+                        "zsh completions have been installed",
+                        "Hide these hints",
+                        "Disable this behaviour",
+                        "HOMEBREW_NO",
+                        "ffmpeg-full includes",
+                        "adb must be accessible"
+                    ]
+                case .brewFormatting:
+                    [
+                        "==> Would",
+                        "==> Do you",
+                        "Trust installed",
+                        "Prefer trusting",
+                        "Whole-tap trust",
+                        "brew untap",
+                        "export HOMEBREW",
+                        "For more information",
+                        "https://docs.brew.sh"
+                    ]
                 }
             }
         }

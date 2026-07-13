@@ -24,10 +24,10 @@ public extension Defaults.Keys
     
     // MARK: - Advanced
     /// Whether to show live Terminal outputs of varous operations
-    static let showRealTimeTerminalOutputOfOperations: Key<Bool> = .init("showRealTimeTerminalOutputOfOperations", default: false)
+    static let showRealTimeTerminalOutputOfOperations: Key<Bool> = .init("showRealTimeTerminalOutputOfOperations", default: true)
     
     /// Whether to expand live Terminal outputs by default
-    static let openRealTimeTerminalOutputByDefault: Key<Bool> = .init("openRealTimeTerminalOutputByDefault", default: false)
+    static let openRealTimeTerminalOutputByDefault: Key<Bool> = .init("openRealTimeTerminalOutputByDefault", default: true)
     
     /// Whether package EULAs should be accepted by default
     ///

@@ -32,6 +32,10 @@ struct BrewPane: View
 
     @State private var isPerformingBrewAnalyticsChangeCommand: Bool = false
 
+    @State private var isRunningMirrorSync: Bool = false
+    @State private var mirrorSyncStatus: String? = nil
+    @State private var selectedSystemMirror: String = "ustc"
+
     var body: some View
     {
         SettingsPaneTemplate
@@ -95,6 +99,59 @@ struct BrewPane: View
                             .disabled(!customHomebrewApiDomainEnabled)
                             .textFieldStyle(.roundedBorder)
                     }
+                    
+                    Section(header: Text("Homebrew Mirror Switcher (国内镜像一键同步)"))
+                    {
+                        Picker("Select Mirror (选择镜像)", selection: $selectedSystemMirror)
+                        {
+                            Text("中国科大 (USTC) - 推荐").tag("ustc")
+                            Text("阿里云 (Aliyun) - 推荐").tag("aliyun")
+                            Text("清华大学 (TUNA)").tag("tuna")
+                            Text("腾讯云 (Tencent)").tag("tencent")
+                            Text("官方默认 (GitHub)").tag("official")
+                        }
+                        
+                        HStack(spacing: 12)
+                        {
+                            Button("Apply to Cork (应用到 Cork)")
+                            {
+                                applyMirrorToCork()
+                            }
+                            
+                            Button("Copy Command (复制命令)")
+                            {
+                                copyMirrorCommand()
+                            }
+                            
+                            Button(isRunningMirrorSync ? "Syncing..." : "Sync to System (一键同步)")
+                            {
+                                Task
+                                {
+                                    await runSystemMirrorSync()
+                                }
+                            }
+                            .disabled(isRunningMirrorSync)
+                        }
+                        .padding(.vertical, 4)
+                        
+                        if isRunningMirrorSync
+                        {
+                            HStack
+                            {
+                                ProgressView()
+                                    .controlSize(.small)
+                                Text("正在执行系统配置与验证，请稍候...")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        else if let status = mirrorSyncStatus
+                        {
+                            Text(status)
+                                .font(.subheadline)
+                                .foregroundColor(status.contains("成功") || status.contains("已复制") || status.contains("已应用") ? .green : .red)
+                        }
+                    }
                 }
                 .onChange(of: allowBrewAnalytics)
                 { _, newValue in
@@ -142,5 +199,97 @@ struct BrewPane: View
                 CustomHomebrewExecutableView()
             }
         }
+    }
+
+    private func applyMirrorToCork()
+    {
+        switch selectedSystemMirror
+        {
+        case "ustc":
+            customHomebrewBottleDomainEnabled = true
+            customHomebrewBottleDomain = "https://mirrors.ustc.edu.cn/homebrew-bottles"
+            customHomebrewApiDomainEnabled = true
+            customHomebrewApiDomain = "https://mirrors.ustc.edu.cn/homebrew-bottles/api"
+        case "aliyun":
+            customHomebrewBottleDomainEnabled = true
+            customHomebrewBottleDomain = "https://mirrors.aliyun.com/homebrew/homebrew-bottles"
+            customHomebrewApiDomainEnabled = true
+            customHomebrewApiDomain = "https://mirrors.aliyun.com/homebrew-bottles/api"
+        case "tuna":
+            customHomebrewBottleDomainEnabled = true
+            customHomebrewBottleDomain = "https://mirrors.tuna.tsinghua.edu.cn/homebrew-bottles"
+            customHomebrewApiDomainEnabled = true
+            customHomebrewApiDomain = "https://mirrors.tuna.tsinghua.edu.cn/homebrew-bottles/api"
+        case "tencent":
+            customHomebrewBottleDomainEnabled = true
+            customHomebrewBottleDomain = "https://mirrors.cloud.tencent.com/homebrew-bottles"
+            customHomebrewApiDomainEnabled = true
+            customHomebrewApiDomain = "https://mirrors.cloud.tencent.com/homebrew-bottles/api"
+        case "official":
+            customHomebrewBottleDomainEnabled = false
+            customHomebrewBottleDomain = ""
+            customHomebrewApiDomainEnabled = false
+            customHomebrewApiDomain = ""
+        default:
+            break
+        }
+        mirrorSyncStatus = "已应用到 Cork 内部配置！"
+    }
+    
+    private func copyMirrorCommand()
+    {
+        let homeDir = FileManager.default.homeDirectoryForCurrentUser
+        let scriptPath = homeDir.appendingPathComponent("Documents/my-script/homebrew-switch-mirror.sh").path
+        let command = "bash \(scriptPath) --\(selectedSystemMirror)"
+        
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(command, forType: .string)
+        mirrorSyncStatus = "已复制终端同步命令！"
+    }
+    
+    private func runSystemMirrorSync() async
+    {
+        isRunningMirrorSync = true
+        mirrorSyncStatus = "正在同步配置并执行 brew update 验证，请稍候..."
+        
+        let homeDir = FileManager.default.homeDirectoryForCurrentUser
+        let scriptPath = homeDir.appendingPathComponent("Documents/my-script/homebrew-switch-mirror.sh").path
+        
+        let fileManager = FileManager.default
+        if !fileManager.fileExists(atPath: scriptPath)
+        {
+            mirrorSyncStatus = "错误：未能在 ~/Documents/my-script/ 找到镜像切换脚本。"
+            isRunningMirrorSync = false
+            return
+        }
+        
+        let outputs = await shell(
+            URL(fileURLWithPath: "/bin/bash"),
+            [scriptPath, "--\(selectedSystemMirror)"]
+        )
+        
+        var fullOutput = ""
+        for output in outputs
+        {
+            switch output
+            {
+            case .standardOutput(let line):
+                fullOutput += line + "\n"
+            case .standardError(let err):
+                fullOutput += err + "\n"
+            }
+        }
+        
+        if fullOutput.contains("成功") || fullOutput.contains("success") || fullOutput.contains("已成功")
+        {
+            mirrorSyncStatus = "同步成功！系统已切换至 \(selectedSystemMirror == "official" ? "官方默认" : selectedSystemMirror) 源。"
+        }
+        else
+        {
+            mirrorSyncStatus = "同步完成，但 brew update 验证失败。可能是网络超时，请尝试其他镜像源。"
+        }
+        
+        isRunningMirrorSync = false
     }
 }

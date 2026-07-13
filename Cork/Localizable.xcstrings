@@ -27248,6 +27248,9 @@
         }
       }
     },
+    "Apply to Cork (应用到 Cork)" : {
+
+    },
     "bothManagedAndUnmanaged" : {
       "shouldTranslate" : false
     },
@@ -28053,6 +28056,9 @@
           }
         }
       }
+    },
+    "Copy Command (复制命令)" : {
+
     },
     "Custom Homebrew Mirror Domains" : {
 
@@ -35836,6 +35842,9 @@
           }
         }
       }
+    },
+    "Homebrew Mirror Switcher (国内镜像一键同步)" : {
+
     },
     "homebrew/core" : {
       "localizations" : {
@@ -55709,6 +55718,9 @@
           }
         }
       }
+    },
+    "Select Mirror (选择镜像)" : {
+
     },
     "service-details.contents.loading" : {
       "localizations" : {
@@ -79625,6 +79637,12 @@
         }
       }
     },
+    "Sync to System (一键同步)" : {
+
+    },
+    "Syncing..." : {
+
+    },
     "Tap" : {
       "localizations" : {
         "cs" : {
@@ -83859,6 +83877,24 @@
           }
         }
       }
+    },
+    "中国科大 (USTC) - 推荐" : {
+
+    },
+    "官方默认 (GitHub)" : {
+
+    },
+    "正在执行系统配置与验证，请稍候..." : {
+
+    },
+    "清华大学 (TUNA)" : {
+
+    },
+    "腾讯云 (Tencent)" : {
+
+    },
+    "阿里云 (Aliyun) - 推荐" : {
+
     },
     "􀇾" : {
       "localizations" : {

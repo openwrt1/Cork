@@ -179,12 +179,11 @@ public struct AppConstants: Sendable
     }
     
     // MARK: - Terminal
-    /// Symbols that discard the whole line of a terminal output
-    public let disqualifyingSymbolsForTerminalOutputs: [String] = [
-        "✔︎",
-        "🍺",
-        "The following taps are not trusted"
-    ]
+    /// Symbols that discard the whole line of a terminal output.
+    /// Note: Do NOT add ✔︎ or 🍺 here — those are normal brew upgrade progress lines
+    /// that should be shown to the user (download complete / bottle poured).
+    /// The tap-trust warning is already suppressed via HOMEBREW_NO_REQUIRE_TAP_TRUST=1.
+    public let disqualifyingSymbolsForTerminalOutputs: [String] = []
 
     // MARK: - Storage for tagging
 

@@ -12,10 +12,6 @@ import SwiftUI
 
 struct UpdateAllPackagesView: View
 {
-    enum CompleteUpdatingError: Error
-    {
-        case containsUnexpectedOutputs([TerminalOutput])
-    }
 
     @Environment(UpdateProgressTracker.self) var updateProgressTracker: UpdateProgressTracker
     @InjectedObservable(\.outdatedPackagesTracker) var outdatedPackagesTracker: OutdatedPackagesTracker
@@ -44,23 +40,12 @@ struct UpdateAllPackagesView: View
         .frame(maxWidth: .infinity)
         .task
         {
-            do throws(Self.CompleteUpdatingError)
-            {
-                try await outdatedPackagesTracker.updatePackages(
-                    updateProgressTracker: updateProgressTracker,
-                    fullUpdateStageTracker: fullUpdateStageTracker
-                )
-                
-                updateProgressTracker.updatingState = .finished
-            }
-            catch let completeUpdatingError
-            {
-                switch completeUpdatingError
-                {
-                case .containsUnexpectedOutputs(let unexpectedOutputs):
-                    updateProgressTracker.updatingState = .completedWithUnexpectedOutputs(unimplementedOutputs: unexpectedOutputs)
-                }
-            }
+            await outdatedPackagesTracker.updatePackages(
+                updateProgressTracker: updateProgressTracker,
+                fullUpdateStageTracker: fullUpdateStageTracker
+            )
+            
+            updateProgressTracker.updatingState = .finished
         }
     }
 }

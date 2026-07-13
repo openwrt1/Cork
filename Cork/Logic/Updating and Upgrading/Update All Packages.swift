@@ -19,7 +19,7 @@ extension OutdatedPackagesTracker
     func updatePackages(
         updateProgressTracker: UpdateProgressTracker,
         fullUpdateStageTracker: UpdateAllPackagesView.FullUpdateStageTracker
-    ) async throws(UpdateAllPackagesView.CompleteUpdatingError)
+    ) async
     {
         let includeGreedyPackages: Bool = Defaults[.includeGreedyOutdatedPackages]
         
@@ -53,8 +53,6 @@ extension OutdatedPackagesTracker
         
         // MARK: - Do the actual updating
         
-        var consolidatedUnexpectedOutputs: [TerminalOutput] = .init()
-        
         for await output in shell(AppConstants.shared.brewExecutablePath, ["upgrade", includeGreedyPackages ? "--greedy" : ""])
         {
             updateProgressTracker.insertOutput(output)
@@ -84,16 +82,11 @@ extension OutdatedPackagesTracker
                 
             } onUnimplementedOutput:
             { unimplementedOutput in
-                self.appConstants.logger.info("Unimplemented output for updater: \(unimplementedOutput.description, privacy: .public)")
-                
-                consolidatedUnexpectedOutputs.append(unimplementedOutput)
+                // Log for diagnostics but do NOT treat as a failure —
+                // brew outputs many informational lines that don't need to be categorised
+                self.appConstants.logger.info("Uncategorised updater output (non-fatal): \(unimplementedOutput.description, privacy: .public)")
             }
 
-        }
-        
-        if !consolidatedUnexpectedOutputs.isEmpty
-        {
-            throw .containsUnexpectedOutputs(consolidatedUnexpectedOutputs)
         }
     }
 }

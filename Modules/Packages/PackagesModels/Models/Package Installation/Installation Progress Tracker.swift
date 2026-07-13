@@ -9,6 +9,7 @@ import BetterProgress
 import CorkShared
 import CorkTerminalFunctions
 import Foundation
+import Defaults
 import SwiftUI
 
 @Observable
@@ -314,7 +315,7 @@ public class InstallationProgressTracker: @MainActor TerminalOutputStreamable
 
     public var standardErrors: [CorkTerminalFunctions.TerminalOutput] = .init()
 
-    public var isStreamedOutputExpanded: Bool = false
+    public var isStreamedOutputExpanded: Bool = Defaults[.openRealTimeTerminalOutputByDefault]
 
     public let packageToInstall: MinimalHomebrewPackage
 
