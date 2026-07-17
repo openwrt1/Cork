@@ -238,7 +238,7 @@ public class UpdateProgressTracker: @MainActor TerminalOutputStreamable
         {
             public var patterns: [String]
             {
-                ["Caveats"]
+                ["Caveats", "already installed", "JSON API", "Warning:"]
             }
         }
     }

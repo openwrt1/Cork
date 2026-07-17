@@ -104,6 +104,8 @@ struct PackageDetailView: View, Sendable, DismissablePane
                         
                         DependantsList(packageDetails: packageDetails)
 
+                        CustomLaunchCommandsView(package: packageStructureToUse)
+
                         PackageSystemInfo(
                             package: packageStructureToUse,
                             caskExecutable: caskExecutable
@@ -121,7 +123,8 @@ struct PackageDetailView: View, Sendable, DismissablePane
                     PackageModificationButtons(
                         package: packageStructureToUse,
                         packageDetails: packageDetails,
-                        isLoadingDetails: isLoadingDetails
+                        isLoadingDetails: isLoadingDetails,
+                        caskExecutable: caskExecutable
                     )
                     
                     #if DEBUG

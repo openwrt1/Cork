@@ -11,6 +11,8 @@ import ButtonKit
 import Defaults
 import CorkModels
 import FactoryKit
+import SwiftData
+import ApplicationInspector
 
 struct PackageModificationButtons: View
 {
@@ -26,6 +28,26 @@ struct PackageModificationButtons: View
     @Bindable var packageDetails: BrewPackage.BrewPackageDetails
 
     let isLoadingDetails: Bool
+    let caskExecutable: Application?
+
+    @Query private var customCommands: [CustomLaunchCommand]
+
+    init(
+        package: BrewPackage,
+        packageDetails: BrewPackage.BrewPackageDetails,
+        isLoadingDetails: Bool,
+        caskExecutable: Application? = nil
+    ) {
+        self.package = package
+        self.packageDetails = packageDetails
+        self.isLoadingDetails = isLoadingDetails
+        self.caskExecutable = caskExecutable
+        
+        let packageName = package.name(withPrecision: .precise)
+        self._customCommands = Query(filter: #Predicate<CustomLaunchCommand> {
+            $0.packageName == packageName
+        })
+    }
 
     var body: some View
     {
@@ -46,11 +68,6 @@ struct PackageModificationButtons: View
                     HStack(spacing: 15)
                     {
                         UninstallationProgressWheel()
-
-                        if allowMoreCompleteUninstallations
-                        {
-                            Spacer()
-                        }
 
                         if !allowMoreCompleteUninstallations
                         {
@@ -89,9 +106,11 @@ struct PackageModificationButtons: View
                             }
                             .fixedSize()
                         }
+
                     }
                 }
             }
         }
     }
 }
+

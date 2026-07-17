@@ -8,6 +8,7 @@
 import SwiftUI
 import ApplicationInspector
 import CorkModels
+import CorkShared
 
 struct PackageSystemInfo: View
 {
@@ -16,6 +17,12 @@ struct PackageSystemInfo: View
     let caskExecutable: Application?
 
     @State private var isShowingCaskSizeHelpPopover: Bool = false
+
+    private var isChinese: Bool
+    {
+        let lang = Locale.current.language.languageCode?.identifier ?? ""
+        return lang.contains("zh")
+    }
 
     var body: some View
     {

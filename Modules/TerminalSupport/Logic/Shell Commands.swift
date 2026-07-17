@@ -126,10 +126,28 @@ public func shell(
 
     // MARK: - Set up proxy if it's enabled
 
-    if let proxySettings = AppConstants.shared.proxySettings
+    if UserDefaults.standard.bool(forKey: "githubAutoProxyEnabled")
     {
-        AppConstants.shared.logger.info("Proxy is enabled")
-        finalEnvironment["ALL_PROXY"] = "\(proxySettings.host):\(proxySettings.port)"
+        // GitHub Smart-Proxy:
+        // Set a global SOCKS5 proxy, then use NO_PROXY to exclude all CN mirror domains.
+        // Result: github.com (Cask downloads) → proxy, USTC/Aliyun/etc (Bottle) → direct.
+        let port = UserDefaults.standard.integer(forKey: "githubAutoProxyPort")
+        let proxyPort = port > 0 ? port : 10808
+        let proxyURL = "socks5://127.0.0.1:\(proxyPort)"
+        AppConstants.shared.logger.info("GitHub Smart-Proxy enabled: proxy=\(proxyURL)")
+        finalEnvironment["ALL_PROXY"]   = proxyURL
+        finalEnvironment["HTTPS_PROXY"] = proxyURL
+        finalEnvironment["HTTP_PROXY"]  = proxyURL
+        // Exclude all domestic mirrors so they bypass the proxy and go direct
+        finalEnvironment["NO_PROXY"] = [
+            "mirrors.ustc.edu.cn",
+            "mirrors.aliyun.com",
+            "mirrors.tuna.tsinghua.edu.cn",
+            "mirrors.cloud.tencent.com",
+            "localhost",
+            "127.0.0.1"
+        ].joined(separator: ",")
+        finalEnvironment["no_proxy"] = finalEnvironment["NO_PROXY"] // some tools check lowercase
     }
 
     // MARK: - Block automatic cleanup is configured
@@ -154,7 +172,7 @@ public func shell(
     finalEnvironment["SUDO_ASKPASS"] = sudoHelperURL.path
 
     task.environment = finalEnvironment
-    task.launchPath = launchPath.absoluteString
+    task.executableURL = launchPath
 
     /// Filter out empty things from the arguments so they don't fuck it up
     task.arguments = arguments.filter { $0 != "" }
@@ -257,10 +275,29 @@ public func shell(
 
     // MARK: - Set up proxy if it's enabled
 
-    if let proxySettings = AppConstants.shared.proxySettings
+    if UserDefaults.standard.bool(forKey: "githubAutoProxyEnabled")
     {
-        AppConstants.shared.logger.info("Proxy is enabled")
-        finalEnvironment["ALL_PROXY"] = "\(proxySettings.host):\(proxySettings.port)"
+        // GitHub Smart-Proxy:
+        // Set a global SOCKS5 proxy, then use NO_PROXY to exclude all CN mirror domains.
+        // Result: github.com (Cask downloads) → proxy, USTC/Aliyun/etc (Bottle) → direct.
+        let port = UserDefaults.standard.integer(forKey: "githubAutoProxyPort")
+        let proxyPort = port > 0 ? port : 10808
+        let proxyURL = "socks5://127.0.0.1:\(proxyPort)"
+        AppConstants.shared.logger.info("GitHub Smart-Proxy enabled: proxy=\(proxyURL)")
+        finalEnvironment["ALL_PROXY"]   = proxyURL
+        finalEnvironment["HTTPS_PROXY"] = proxyURL
+        finalEnvironment["HTTP_PROXY"]  = proxyURL
+        // Exclude all domestic mirrors so they bypass the proxy and go direct
+        finalEnvironment["NO_PROXY"] = [
+            "mirrors.ustc.edu.cn",
+            "mirrors.aliyun.com",
+            "mirrors.tuna.tsinghua.edu.cn",
+            "mirrors.cloud.tencent.com",
+            "formulae.brew.sh",
+            "localhost",
+            "127.0.0.1"
+        ].joined(separator: ",")
+        finalEnvironment["no_proxy"] = finalEnvironment["NO_PROXY"] // some tools check lowercase
     }
 
     // MARK: - Block automatic cleanup is configured
@@ -292,7 +329,7 @@ public func shell(
     finalEnvironment["SUDO_ASKPASS"] = sudoHelperURL.path
 
     task.environment = finalEnvironment
-    task.launchPath = launchPath.absoluteString
+    task.executableURL = launchPath
 
     /// Filter out empty things from the arguments so they don't fuck it up
     task.arguments = arguments.filter { $0 != "" }

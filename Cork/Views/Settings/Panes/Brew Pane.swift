@@ -18,9 +18,8 @@ struct BrewPane: View
     @Default(.allowBrewAnalytics) var allowBrewAnalytics: Bool
     @Default(.allowAdvancedHomebrewSettings) var allowAdvancedHomebrewSettings: Bool
 
-    @Default(.customProxyEnabled) var customProxyEnabled: Bool
-    @Default(.customProxyHost) var customProxyHost: String
-    @Default(.customProxyPort) var customProxyPort: Int
+    @Default(.githubAutoProxyEnabled) var githubAutoProxyEnabled: Bool
+    @Default(.githubAutoProxyPort) var githubAutoProxyPort: Int
 
     @Default(.customHomebrewBottleDomainEnabled) var customHomebrewBottleDomainEnabled: Bool
     @Default(.customHomebrewBottleDomain) var customHomebrewBottleDomain: String
@@ -65,21 +64,58 @@ struct BrewPane: View
                         Text("settings.brew.analytics")
                     }
                     
-                    Section(header: Text("Custom Network Proxy"))
+                    Section(header: Text("GitHub 智能代理"))
                     {
-                        Defaults.Toggle(key: .customProxyEnabled)
+                        LabeledContent
                         {
-                            Text("Enable Custom Proxy (Cork commands only)")
+                            Defaults.Toggle(key: .githubAutoProxyEnabled)
+                            {
+                                Text("自动为 GitHub 下载走本机代理")
+                            }
+                        } label: {
+                            Text("GitHub 智能代理")
                         }
-                        
-                        TextField("Proxy Host", text: $customProxyHost)
-                            .disabled(!customProxyEnabled)
-                            .textFieldStyle(.roundedBorder)
-                        
-                        TextField("Proxy Port", value: $customProxyPort, format: .number)
-                            .disabled(!customProxyEnabled)
-                            .textFieldStyle(.roundedBorder)
+
+                        LabeledContent
+                        {
+                            TextField("10808", value: $githubAutoProxyPort, format: .number)
+                                .disabled(!githubAutoProxyEnabled)
+                                .textFieldStyle(.roundedBorder)
+                                .frame(width: 70)
+                        } label: {
+                            Text("本机 SOCKS5 端口")
+                                .foregroundColor(githubAutoProxyEnabled ? .primary : .secondary)
+                        }
+
+                        if githubAutoProxyEnabled
+                        {
+                            LabeledContent
+                            {
+                                Text("socks5://127.0.0.1:\(githubAutoProxyPort)")
+                                    .font(.caption.monospaced())
+                                    .foregroundColor(.secondary)
+                                    .textSelection(.enabled)
+                            } label: {
+                                Text("代理地址")
+                            }
+
+                            LabeledContent
+                            {
+                                Text("ustc · aliyun · tuna · tencent · formulae.brew.sh")
+                                    .font(.caption.monospaced())
+                                    .foregroundColor(.secondary)
+                            } label: {
+                                Text("直连域名")
+                            }
+                        }
+                        else
+                        {
+                            Text("开启后 github.com（Cask）走代理，国内镜像（Bottle）直连，互不影响。")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
                     }
+
                     
                     Section(header: Text("Custom Homebrew Mirror Domains"))
                     {

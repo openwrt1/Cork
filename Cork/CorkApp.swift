@@ -72,7 +72,7 @@ struct CorkApp: App
 
         return scheduler
     }()
-
+       
     var body: some Scene
     {
         Window("Main Window", id: .mainWindowID)
@@ -89,10 +89,7 @@ struct CorkApp: App
                 .environment(cachedDownloadsTracker)
                 .environment(outdatedPackagesTracker)
                 .environment(topPackagesTracker)
-                .modelContainer(for: [
-                    SavedTaggedPackage.self,
-                    ExcludedAdoptableApp.self
-                ])
+                .modelContainer(AppConstants.shared.modelContainer)
                 .task
                 {
                     NSWindow.allowsAutomaticWindowTabbing = false

@@ -84,8 +84,11 @@ public extension OutdatedPackagesTracker
         forUpdatingType updatingType: OutdatedPackage.PackageUpdatingType
     ) async throws -> Set<OutdatedPackage>
     {
-        // First, we have to pull the newest updates
-        await shell(AppConstants.shared.brewExecutablePath, ["update"])
+        // MARK: - Step 1: brew update (isolated, non-fatal stderr is ignored)
+        // Run brew update separately so its stderr never pollutes the outdated-package output.
+        // Only truly fatal stderr patterns (permission errors, git failures, etc.) cause an abort;
+        // transient warnings like "Another brew update process is already running" are ignored.
+        let updateOutput: [TerminalOutput] = await shell(AppConstants.shared.brewExecutablePath, ["update"])
 
         // Then we can get the updating under way
         /// Introduces an empty argument in case the updating is non-greedy
@@ -103,12 +106,6 @@ public extension OutdatedPackagesTracker
         {
             AppConstants.shared.logger.error("Encountered HOME error")
             throw OutdatedPackageRetrievalError.homeNotSet
-        }
-
-        if rawOutput.containsErrors
-        {
-            AppConstants.shared.logger.error("Standard error for package updating is not empty: \(rawOutput.standardErrors)")
-            throw OutdatedPackageRetrievalError.otherError(rawOutput.standardErrors.formatted(.list(type: .and)))
         }
 
         // MARK: - Decoding

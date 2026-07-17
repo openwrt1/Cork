@@ -48,11 +48,19 @@ public struct AppConstants: Sendable
         
         self.logger = internalLogger
         
-        let modelConfiguration: ModelConfiguration = .init(isStoredInMemoryOnly: false)
+        let fileManager = FileManager.default
+        let appSupportURL = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let corkStoreFolderURL = appSupportURL.appending(path: "eu.davidbures.cork", directoryHint: .isDirectory)
+        
+        try? fileManager.createDirectory(at: corkStoreFolderURL, withIntermediateDirectories: true)
+        
+        let storeURL = corkStoreFolderURL.appending(path: "Cork.store")
+        let schema = Schema([SavedTaggedPackage.self, ExcludedAdoptableApp.self, CustomLaunchCommand.self])
+        let modelConfiguration: ModelConfiguration = .init(schema: schema, url: storeURL)
         
         do
         {
-            let initializedModelContainer = try ModelContainer(for: SavedTaggedPackage.self, ExcludedAdoptableApp.self, configurations: modelConfiguration)
+            let initializedModelContainer = try ModelContainer(for: schema, configurations: modelConfiguration)
             
             self.modelContainer = initializedModelContainer
         }
@@ -77,50 +85,24 @@ public struct AppConstants: Sendable
 
     public let notificationCenter: UNUserNotificationCenter = UNUserNotificationCenter.current()
 
-    public var proxySettings: (host: String, port: Int)?
-    {
-        if UserDefaults.standard.bool(forKey: "customProxyEnabled")
-        {
-            let host = UserDefaults.standard.string(forKey: "customProxyHost") ?? ""
-            let port = UserDefaults.standard.integer(forKey: "customProxyPort")
-            if !host.isEmpty && port > 0
-            {
-                return (host: host, port: port)
-            }
-        }
-        
-        guard let proxySettingsUnmanaged = CFNetworkCopySystemProxySettings() else { return nil }
-        let proxySettings = proxySettingsUnmanaged.takeRetainedValue() as? [String: Any]
-        
-        guard let httpProxyHost = proxySettings?[kCFNetworkProxiesHTTPProxy as String] as? String,
-              let httpProxyPort = proxySettings?[kCFNetworkProxiesHTTPPort as String] as? Int
-        else
-        {
-            return nil
-        }
-        
-        return (host: httpProxyHost, port: httpProxyPort)
-    }
 
     // MARK: - Basic executables and file locations
     
     public let brewExecutablePath: URL = {
         /// If a custom Homebrew path is defined, use it. Otherwise, use the default paths
-        if let homebrewPath = UserDefaults.standard.string(forKey: "customHomebrewPath"), !homebrewPath.isEmpty
+        if let customHomebrewPath = Defaults[.customHomebrewPath]
         {
-            let customHomebrewPath: URL = .init(string: homebrewPath)!
-
             return customHomebrewPath
         }
         else
         {
             if FileManager.default.fileExists(atPath: "/opt/homebrew/bin/brew")
             { // Apple Sillicon
-                return URL(string: "/opt/homebrew/bin/brew")!
+                return URL(filePath: "/opt/homebrew/bin/brew")
             }
             else
             { // Intel
-                return URL(string: "/usr/local/bin/brew")!
+                return URL(filePath: "/usr/local/bin/brew")
             }
         }
     }()

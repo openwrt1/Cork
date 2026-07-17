@@ -22,10 +22,12 @@ public extension Defaults.Keys
     
     static let customHomebrewPath: Key<URL?> = .init("customHomebrewPath", default: nil)
     
-    // MARK: - Custom Proxy Settings
-    static let customProxyEnabled: Key<Bool> = .init("customProxyEnabled", default: false)
-    static let customProxyHost: Key<String> = .init("customProxyHost", default: "127.0.0.1")
-    static let customProxyPort: Key<Int> = .init("customProxyPort", default: 7890)
+    // MARK: - GitHub Auto-Proxy
+    /// When enabled, all brew commands automatically use a local SOCKS5 proxy for GitHub traffic.
+    /// This is useful when GitHub downloads are slow or blocked but a local proxy (e.g. Clash/V2Ray) is running.
+    static let githubAutoProxyEnabled: Key<Bool> = .init("githubAutoProxyEnabled", default: false)
+    /// Port for the GitHub auto-proxy (SOCKS5 on localhost). Default: 10808
+    static let githubAutoProxyPort: Key<Int> = .init("githubAutoProxyPort", default: 10808)
     
     // MARK: - Custom Mirror Domains
     static let customHomebrewBottleDomainEnabled: Key<Bool> = .init("customHomebrewBottleDomainEnabled", default: false)

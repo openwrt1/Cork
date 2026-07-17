@@ -97,17 +97,24 @@ struct ContentView: View, Sendable
         {
             SidebarView()
         } detail: {
-            switch navigationManager.openedScreen
-            {
-            case .package(let package):
-                PackageDetailView(package: package)
-                    .frame(minWidth: 600, minHeight: 500)
-            case .tap(let tap):
-                TapDetailView(tap: tap)
-                    .frame(minWidth: 600, minHeight: 500)
-            case nil:
-                StartPage()
-                    .frame(minWidth: 600, minHeight: 500)
+            HStack(spacing: 0) {
+                Group {
+                    switch navigationManager.openedScreen
+                    {
+                    case .package(let package):
+                        PackageDetailView(package: package)
+                            .frame(minWidth: 650, minHeight: 500)
+                    case .tap(let tap):
+                        TapDetailView(tap: tap)
+                            .frame(minWidth: 650, minHeight: 500)
+                    case nil:
+                        StartPage()
+                            .frame(minWidth: 650, minHeight: 500)
+                    }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                
+                GlobalQuickLaunchBar()
             }
         }
         .navigationTitle("app-name")

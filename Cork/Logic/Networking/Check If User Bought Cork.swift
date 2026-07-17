@@ -31,12 +31,14 @@ enum CorkLicenseRetrievalError: LocalizedError
 func checkIfUserBoughtCork(for email: String) async throws -> Bool
 {
     let sessionConfiguration: URLSessionConfiguration = URLSessionConfiguration.default
-    if AppConstants.shared.proxySettings != nil
+    if UserDefaults.standard.bool(forKey: "githubAutoProxyEnabled")
     {
+        let port = UserDefaults.standard.integer(forKey: "githubAutoProxyPort")
+        let proxyPort = port > 0 ? port : 10808
         sessionConfiguration.connectionProxyDictionary = [
-            kCFNetworkProxiesHTTPEnable: 1,
-            kCFNetworkProxiesHTTPPort: AppConstants.shared.proxySettings!.port,
-            kCFNetworkProxiesHTTPProxy: AppConstants.shared.proxySettings!.host
+            kCFNetworkProxiesSOCKSEnable: 1,
+            kCFNetworkProxiesSOCKSPort:   proxyPort,
+            kCFNetworkProxiesSOCKSProxy:  "127.0.0.1"
         ] as [AnyHashable: Any]
     }
 

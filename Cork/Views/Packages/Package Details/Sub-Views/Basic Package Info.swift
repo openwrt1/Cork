@@ -22,6 +22,12 @@ struct BasicPackageInfoView: View
     let isInPreviewWindow: Bool
 
     @Binding var isShowingExpandedCaveats: Bool
+    
+    private var isChinese: Bool
+    {
+        let lang = Locale.current.language.languageCode?.identifier ?? ""
+        return lang.contains("zh")
+    }
 
     var hasNotes: Bool
     {
@@ -114,8 +120,51 @@ struct BasicPackageInfoView: View
             } label: {
                 Text("package-details.homepage")
             }
+            
+            installationPathLine
         } header: {
             Text("package-details.info")
+        }
+    }
+    
+    @ViewBuilder
+    var installationPathLine: some View
+    {
+        let folderURL: URL = {
+            let parent = package.type == .formula ? AppConstants.shared.brewCellarPath : AppConstants.shared.brewCaskPath
+            let packageFolder = parent.appending(path: package.name(withPrecision: .precise))
+            if let firstVersion = package.versions.first
+            {
+                return packageFolder.appending(path: firstVersion)
+            }
+            return packageFolder
+        }()
+        
+        LabeledContent
+        {
+            PathControl(urlToShow: folderURL, style: .standard, width: 250)
+                .contextMenu
+                {
+                    Button
+                    {
+                        do {
+                            try package.revealInFinder()
+                        } catch {
+                            folderURL.revealInFinder(.openParentDirectoryAndHighlightTarget)
+                        }
+                    } label: {
+                        Text(isChinese ? "在 Finder 中显示" : "Reveal in Finder")
+                    }
+                    Button
+                    {
+                        NSPasteboard.general.clearContents()
+                        NSPasteboard.general.setString(folderURL.path, forType: .string)
+                    } label: {
+                        Text(isChinese ? "复制路径" : "Copy Path")
+                    }
+                }
+        } label: {
+            Text(isChinese ? "安装路径" : "Installation Path")
         }
     }
 }
