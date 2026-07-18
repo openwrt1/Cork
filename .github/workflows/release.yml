@@ -35,6 +35,9 @@ jobs:
       - name: Install Tuist via Mise
         uses: jdx/mise-action@v2
 
+      - name: Select Xcode 16.2
+        run: sudo xcode-select -switch /Applications/Xcode_16.2.app
+
       - name: Install Tuist Dependencies
         run: tuist install
 
