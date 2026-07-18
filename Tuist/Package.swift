@@ -28,7 +28,7 @@ let package = Package(
         .package(url: "https://github.com/buresdv/BetterProgress", .upToNextMinor(from: "1.2.1")),
         .package(url: "https://github.com/buresdv/ApplicationInspector", .upToNextMajor(from: "1.0.0")),
         .package(url: "https://github.com/Dean151/ButtonKit", .upToNextMajor(from: "0.6.1")),
-        .package(url: "https://github.com/hmlongco/Factory", branch: "develop"),
+        .package(url: "https://github.com/hmlongco/Factory", revision: "bcca76f9243ace59477c8d077d25a97795eab5c4"),
         .package(url: "https://github.com/pointfreeco/swift-navigation", from: "2.0.0")
     ]
 )
